@@ -39,43 +39,26 @@ app.use(session({
   store: new fileStore()
 }))
 
+app.use('/', indexRouter);
+app.use('/users', usersRouter);
+
 function auth(req, res, next){
   //chk if username and password is present in cookie
   console.log(req.session);
   if(!req.session.user){
-    let authHeader = req.headers.authorization;
-    if(!authHeader){
-      let err = new Error("You are not authenticated");
-      res.setHeader("WWW-authenticate", "Basic");
-      err.status = 401;
-      next(err);
-      return;
-    }
-    let auth = new Buffer.from(authHeader.split(" ")[1], "base64").toString().split(":");
-    let user = auth[0];
-    let pass = auth[1];
-    if(user == "admin" && pass == "password"){
-      //agr saahi credentials hon to cookie create krke agy bhjddo
-      //res.cookie('user','admin',{signed: true});
-      req.session.user = 'admin'; // initialize session
-      next();
-    }else{
-      let err = new Error("You are not authenticated");
-      res.setHeader("WWW-authenticate", "Basic");
-      err.status = 401;
-      next(err);
-    }
+    let err = new Error("You are not authenticated");
+    err.status = 403;
+    return next(err);
     }
   else{
     //mtlb agr cookie hai
-    if (req.session.user === 'admin'){
+    if (req.session.user === 'authenticated'){
       next();
     }
     else{
       let err = new Error("You are not authenticated");
-      res.setHeader("WWW-authenticate", "Basic");
-      err.status = 401;
-      next(err);
+      err.status = 403;
+      return next(err);
     }
   }
   
@@ -84,8 +67,7 @@ function auth(req, res, next){
 app.use(auth);
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+
 app.use('/dishes', dishRouter);
 app.use('/leaders', leaderRouter);
 app.use('/promotions', promoRouter);
