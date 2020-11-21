@@ -4,6 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
+var session = require('express-session');
+var fileStore = require('session-file-store')(session); //will store sessions in this project
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
@@ -27,11 +29,20 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 //ye random no. hai jo signed cookie k liye use hota hai
-app.use(cookieParser('12345-67890-09876-54321'));
+//app.use(cookieParser('12345-67890-09876-54321'));
+//session bnaya hai
+app.use(session({
+  name: 'session-id',
+  secret: '12345-67890-09876-54321',
+  saveUninitialized: false,
+  resave: false,
+  store: new fileStore()
+}))
 
 function auth(req, res, next){
   //chk if username and password is present in cookie
-  if(!req.signedCookies.user){
+  console.log(req.session);
+  if(!req.session.user){
     let authHeader = req.headers.authorization;
     if(!authHeader){
       let err = new Error("You are not authenticated");
@@ -45,7 +56,8 @@ function auth(req, res, next){
     let pass = auth[1];
     if(user == "admin" && pass == "password"){
       //agr saahi credentials hon to cookie create krke agy bhjddo
-      res.cookie('user','admin',{signed: true});
+      //res.cookie('user','admin',{signed: true});
+      req.session.user = 'admin'; // initialize session
       next();
     }else{
       let err = new Error("You are not authenticated");
@@ -56,7 +68,7 @@ function auth(req, res, next){
     }
   else{
     //mtlb agr cookie hai
-    if (req.signedCookies.user === 'admin'){
+    if (req.session.user === 'admin'){
       next();
     }
     else{
