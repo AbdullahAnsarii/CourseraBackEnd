@@ -12,25 +12,25 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 exports.getToken = function(user){
-    return jwt.sign(user, config.secretkey, {expiresIn: 3600});
+    return jwt.sign(user, config.secretkey, {expiresIn: 3600}); //signing token
 }
 
 let opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
+opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();//extracting token from header
 opts.secretOrKey = config.secretkey;
-
+//authenticating user
 exports.jwtPassport = passport.use(new JwtStrategy(opts,
     (jwt_payload, done) => {
         console.log("JWT Payload: " + jwt_payload);
         user.findOne({_id: jwt_payload._id}, (err, user) => {
             if (err){
-                return done(err, false);
+                return done(err, false);//if error
             }
             else if (user){
-                return done(null, true);
+                return done(null, true);//if user found
             }
             else{
-                return done(null, false);
+                return done(null, false);//if user is not found
             }
         })
     }))
