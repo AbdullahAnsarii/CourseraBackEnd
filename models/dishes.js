@@ -15,8 +15,8 @@ let commentSchema = new schema({
         required: true
     },
     author:  {
-        type: String,
-        required: true
+        type: mongoose.Schema.Types.ObjectId, //bhaee author ko populate krengy user schema se jo login hoga
+        ref: 'user'
     }
 }, {
     timestamps: true
