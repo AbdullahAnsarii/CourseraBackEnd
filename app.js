@@ -18,6 +18,16 @@ var promoRouter = require('./routes/promoRouter');
 var Dishes = require('./models/dishes');
 var app = express();
 
+//secure traffic i.e. to redirect http to https
+app.all('*',(req, res, next)=>{
+  if(req.secure){
+    return next()
+  }
+  else{
+    res.redirect(307, 'https://' + req.hostname + ':' + app.get('secPort') + req.url);
+  }
+})
+
 let url = config.mongourl;
 let connect = mongoose.connect(url);
 
